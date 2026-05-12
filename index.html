@@ -3,14 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>IG Portrait Journal (4:5)</title>
+    <title>Minimalist Journal with Soft Shadow</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Lora:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
     <style>
         :root {
             --bg-ui: #f1f5f9;
-            --primary: #0f172a;
-            --highlight: #fde047; /* Kuning cerah */
+            --primary: #1e293b;
+            --highlight: #fde047;
+            /* Shadow yang sangat halus */
+            --soft-shadow: 1px 1px 2px rgba(0, 0, 0, 0.08);
         }
 
         body {
@@ -27,9 +29,8 @@
             .preview-section { width: 100% !important; order: 1; padding: 20px 10px; }
         }
 
-        /* Sidebar Editor */
         .editor-section {
-            width: 380px;
+            width: 400px;
             background: white;
             padding: 30px;
             display: flex;
@@ -61,8 +62,6 @@
             border-left: 4px solid var(--primary);
         }
 
-        .btn-group { display: flex; gap: 10px; flex-direction: column; }
-
         .btn-export {
             padding: 16px;
             background: var(--primary);
@@ -74,16 +73,15 @@
             transition: 0.2s;
         }
 
-        .btn-export:hover { opacity: 0.9; transform: translateY(-1px); }
+        .btn-export:hover { opacity: 0.9; }
 
-        /* Preview Area (Instagram 1080x1350) */
         .preview-section {
             flex-grow: 1;
             display: flex;
             flex-direction: column;
             align-items: center;
             gap: 40px;
-            padding: 60px;
+            padding: 40px;
             overflow-y: auto;
             background: #cbd5e1;
         }
@@ -92,147 +90,75 @@
             width: 400px; 
             height: 500px; 
             background: #fff;
-            padding: 30px 45px; /* Padding atas dikurangi agar header lebih ke atas */
-            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
+            padding: 25px 45px;
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.1);
             position: relative;
             box-sizing: border-box;
             flex-shrink: 0;
         }
 
         .header-journal {
-            border-bottom: 2px solid #1e293b;
             margin-bottom: 25px;
             display: flex;
             justify-content: space-between;
-            align-items: flex-end;
-            padding-bottom: 6px;
+            align-items: center;
+            font-size: 9px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: #94a3b8;
+            border-bottom: 1px solid #f1f5f9;
+            padding-bottom: 10px;
         }
 
-        .date-label { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; color: #1e293b; }
-        .page-counter { font-size: 11px; font-weight: 700; color: #94a3b8; }
-
-        /* Content Constraints */
         .text-wrap {
             font-family: 'Lora', serif;
-            font-size: 17px;
-            line-height: 1.8;
+            font-size: 16px;
+            line-height: 1.7;
             color: #334155;
-            height: 380px; /* Area teks lebih tinggi karena footer dihapus */
+            height: 410px;
             overflow: hidden;
+            /* Shadow tipis untuk teks utama */
+            text-shadow: var(--soft-shadow);
         }
 
         /* Markdown Styles */
         .md-h1 { 
-            font-size: 26px; 
+            font-size: 24px; 
             font-weight: 700; 
             display: block; 
-            margin-bottom: 12px; 
+            margin-bottom: 8px; 
             color: #0f172a; 
+            font-family: 'Inter', sans-serif; 
+            letter-spacing: -0.5px; 
             line-height: 1.2;
-            font-family: 'Inter', sans-serif;
+            /* Shadow sedikit lebih tegas untuk judul */
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.1);
         }
+
         .md-bold { font-weight: 700; color: #000; }
         .md-italic { font-style: italic; }
-        .md-highlight { background-color: var(--highlight); padding: 0 2px; border-radius: 2px; }
+        
+        .md-highlight { 
+            background-color: var(--highlight); 
+            padding: 2px 4px; 
+            border-radius: 4px; 
+            display: inline;
+            box-decoration-break: clone;
+            -webkit-box-decoration-break: clone;
+            text-shadow: none; /* Hilangkan shadow di atas highlight agar bersih */
+        }
+        
+        .line-container { margin-bottom: 4px; min-height: 1em; }
+        
+        .md-bullet { display: flex; align-items: flex-start; gap: 8px; }
+        .md-bullet::before { content: "•"; color: var(--primary); font-weight: bold; flex-shrink: 0; }
+        
+        .md-check { display: flex; align-items: flex-start; gap: 8px; }
+        .md-check::before { content: "✔"; color: #10b981; font-size: 12px; margin-top: 4px; flex-shrink: 0; }
 
     </style>
 </head>
 <body>
 
-    <div class="editor-section">
-        <h2 style="margin-top:0">Journal Editor</h2>
-        <textarea id="main-input" placeholder="Apa yang ingin kamu ceritakan hari ini?"></textarea>
-        
-        <div class="hint-box">
-            <b>Formatting Tips:</b><br>
-            • <b>**Judul**</b><br>
-            • <b>*Tebal*</b><br>
-            • <b>\Miring\</b><br>
-            • <b>\\Highlight\\</b>
-        </div>
-
-        <div class="btn-group">
-            <button class="btn-export" onclick="downloadAll()">Simpan Semua Halaman (PNG)</button>
-        </div>
-    </div>
-
-    <div class="preview-section" id="canvas-container">
-        <!-- Generated Pages -->
-    </div>
-
-    <script>
-        const input = document.getElementById('main-input');
-        const container = document.getElementById('canvas-container');
-        const dateStr = new Date().toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase();
-
-        function applyMarkdown(text) {
-            return text
-                .replace(/\*\*(.*?)\*\*/g, '<span class="md-h1">$1</span>') // Judul
-                .replace(/\\\\(.*?)\\\\/g, '<span class="md-highlight">$1</span>') // Highlight
-                .replace(/\*(.*?)\*/g, '<span class="md-bold">$1</span>') // Bold
-                .replace(/\\(.*?)\\/g, '<span class="md-italic">$1</span>'); // Italic
-        }
-
-        function renderPages() {
-            container.innerHTML = '';
-            const content = input.value || "Mulai tuliskan ulasan buku, film, atau ceritamu...";
-            const paragraphs = content.split('\n');
-            
-            let pNum = 1;
-            let activePage = createNewPage(pNum);
-            let activeArea = activePage.querySelector('.text-wrap');
-
-            paragraphs.forEach(p => {
-                const pEl = document.createElement('div');
-                pEl.style.marginBottom = '15px';
-                pEl.innerHTML = applyMarkdown(p);
-                
-                activeArea.appendChild(pEl);
-
-                // Cek tinggi (380px sekarang)
-                if (activeArea.scrollHeight > 380) {
-                    activeArea.removeChild(pEl);
-                    
-                    pNum++;
-                    activePage = createNewPage(pNum);
-                    activeArea = activePage.querySelector('.text-wrap');
-                    activeArea.appendChild(pEl);
-                }
-            });
-        }
-
-        function createNewPage(n) {
-            const el = document.createElement('div');
-            el.className = 'ig-portrait';
-            el.innerHTML = `
-                <div class="header-journal">
-                    <span class="date-label">${dateStr}</span>
-                    <span class="page-counter">SLIDE ${n}</span>
-                </div>
-                <div class="text-wrap"></div>
-            `;
-            container.appendChild(el);
-            return el;
-        }
-
-        input.addEventListener('input', renderPages);
-        renderPages();
-
-        async function downloadAll() {
-            const pages = document.querySelectorAll('.ig-portrait');
-            for (let i = 0; i < pages.length; i++) {
-                const canvas = await html2canvas(pages[i], { 
-                    scale: 2.7, 
-                    backgroundColor: '#ffffff',
-                    useCORS: true
-                });
-                
-                const link = document.createElement('a');
-                link.download = `IG-Journal-Page-${i+1}.png`;
-                link.href = canvas.toDataURL("image/png");
-                link.click();
-            }
-        }
-    </script>
-</body>
-</html>
+    <div class="editor-section
