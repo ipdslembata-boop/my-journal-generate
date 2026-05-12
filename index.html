@@ -3,24 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Quiet Journal Editor (4:5)</title>
+    <title>Quiet Studio - Apple Edition</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Lora:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+    <!-- Menggunakan Inter sebagai alternatif SF Pro -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-soft: #e9edc9; /* Sage Green sangat teduh */
-            --paper: #fefae0;   /* Cream lembut */
-            --ink: #283618;     /* Hijau tua pekat */
+            --bg-soft: #e9edc9; 
+            --paper: #fefae0;   
+            --ink: #1a1a1a;     /* Hitam hampir pekat ala Apple */
             --highlight: #ffea00;
         }
 
         body {
-            font-family: 'Inter', sans-serif;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             background-color: var(--bg-soft);
             margin: 0;
             display: flex;
             height: 100vh;
             color: var(--ink);
+            -webkit-font-smoothing: antialiased; /* Membuat font lebih halus di layar */
         }
 
         @media (max-width: 768px) {
@@ -50,6 +52,7 @@
             outline: none;
             resize: none;
             background: #fafafa;
+            font-family: 'Inter', sans-serif;
         }
 
         .hint-box {
@@ -64,13 +67,14 @@
 
         .btn-export {
             padding: 16px;
-            background: #606c38;
+            background: #1a1a1a; /* Tombol hitam elegan */
             color: white;
             border: none;
             border-radius: 12px;
-            font-weight: 600;
+            font-weight: 500;
             cursor: pointer;
             transition: 0.2s;
+            letter-spacing: -0.01em;
         }
 
         /* Preview Area (1080x1350) */
@@ -88,52 +92,60 @@
             width: 400px; 
             height: 500px; 
             background: var(--paper);
-            padding: 35px 45px; /* Header lebih ke atas */
-            box-shadow: 0 20px 40px rgba(40, 54, 24, 0.1);
+            padding: 35px 45px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.05);
             position: relative;
             box-sizing: border-box;
             flex-shrink: 0;
         }
 
         .header-journal {
-            border-bottom: 1.5px solid var(--ink);
+            border-bottom: 1px solid rgba(0,0,0,0.1); /* Garis tipis minimalis */
             margin-bottom: 25px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding-bottom: 5px;
+            padding-bottom: 10px;
         }
 
-        .date-label { font-size: 10px; font-weight: 700; letter-spacing: 1px; }
-        .page-counter { font-size: 10px; font-weight: 700; opacity: 0.5; }
+        .date-label { font-size: 10px; font-weight: 700; letter-spacing: 0.05em; opacity: 0.4; }
+        .page-counter { font-size: 10px; font-weight: 700; opacity: 0.3; }
 
         .text-wrap {
-            font-family: 'Lora', serif;
-            font-size: 17px;
-            line-height: 1.8;
+            font-size: 16px;
+            line-height: 1.6;
             color: var(--ink);
-            height: 380px; /* Area teks lebih luas */
+            height: 380px; 
             overflow: hidden;
+            letter-spacing: -0.011em; /* Ciri khas SF Pro */
+            font-weight: 400;
         }
 
         /* Markdown Styles */
-        .md-h1 { font-family: 'Inter', sans-serif; font-size: 26px; font-weight: 700; display: block; margin-bottom: 10px; line-height: 1.2; }
-        .md-bold { font-weight: 700; }
-        .md-italic { font-style: italic; }
+        .md-h1 { 
+            font-size: 28px; 
+            font-weight: 700; 
+            display: block; 
+            margin-bottom: 15px; 
+            line-height: 1.1; 
+            letter-spacing: -0.03em; /* Judul lebih rapat ala Apple */
+        }
+        .md-bold { font-weight: 600; } /* Apple jarang pakai 700 untuk teks biasa */
+        .md-italic { font-style: italic; opacity: 0.9; }
         .md-hl { background-color: var(--highlight); padding: 0 2px; border-radius: 2px; }
     </style>
 </head>
 <body>
 
     <div class="editor-section">
-        <h2 style="margin-top:0; color: #606c38;">Quiet Studio</h2>
-        <textarea id="main-input" placeholder="Ceritakan harimu..."></textarea>
+        <h2 style="margin-top:0; font-weight: 700; letter-spacing: -0.04em;">Quiet Studio</h2>
+        <textarea id="main-input" placeholder="Apa yang sedang kamu pikirkan?"></textarea>
         
         <div class="hint-box">
             **Judul** | *Tebal* | \Miring\ | \\Highlight\\
         </div>
 
-        <button class="btn-export" onclick="downloadAll()">Download PNG (1080x1350)</button>
+        <button class="btn-export" onclick="downloadAll()">Export PNG (1080x1350)</button>
     </div>
 
     <div class="preview-section" id="canvas-container"></div>
@@ -145,15 +157,15 @@
 
         function applyMarkdown(text) {
             return text
-                .replace(/\*\*(.*?)\*\*/g, '<span class="md-h1">$1</span>') // Judul
-                .replace(/\\\\(.*?)\\\\/g, '<span class="md-hl">$1</span>') // Highlight
-                .replace(/\*(.*?)\*/g, '<span class="md-bold">$1</span>')    // Bold
-                .replace(/\\(.*?)\\/g, '<span class="md-italic">$1</span>'); // Italic
+                .replace(/\*\*(.*?)\*\*/g, '<span class="md-h1">$1</span>')
+                .replace(/\\\\(.*?)\\\\/g, '<span class="md-hl">$1</span>')
+                .replace(/\*(.*?)\*/g, '<span class="md-bold">$1</span>')
+                .replace(/\\(.*?)\\/g, '<span class="md-italic">$1</span>');
         }
 
         function renderPages() {
             container.innerHTML = '';
-            const content = input.value || "Tulis sesuatu...";
+            const content = input.value || "Mulai menulis...";
             const paragraphs = content.split('\n');
             
             let pNum = 1;
@@ -162,7 +174,7 @@
 
             paragraphs.forEach(p => {
                 const pEl = document.createElement('div');
-                pEl.style.marginBottom = '12px';
+                pEl.style.marginBottom = '14px';
                 pEl.innerHTML = applyMarkdown(p);
                 activeArea.appendChild(pEl);
 
@@ -196,9 +208,14 @@
         async function downloadAll() {
             const pages = document.querySelectorAll('.ig-portrait');
             for (let i = 0; i < pages.length; i++) {
-                const canvas = await html2canvas(pages[i], { scale: 2.7, backgroundColor: '#fefae0' });
+                const canvas = await html2canvas(pages[i], { 
+                    scale: 3, 
+                    backgroundColor: '#fefae0',
+                    scrollX: 0,
+                    scrollY: -window.scrollY
+                });
                 const link = document.createElement('a');
-                link.download = `Quiet-Journal-${i+1}.png`;
+                link.download = `Apple-Journal-${i+1}.png`;
                 link.href = canvas.toDataURL("image/png");
                 link.click();
             }
@@ -206,4 +223,3 @@
     </script>
 </body>
 </html>
-```[cite: 1]
