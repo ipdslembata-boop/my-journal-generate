@@ -1,0 +1,168 @@
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Journal Editor & Export</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600&family=Inter:wght@300;400&family=Lora:ital@0;1&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #f0f2f5;
+            --primary-blue: #2563eb;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            margin: 0;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Sisi Kiri: Input */
+        .editor-section {
+            width: 40%;
+            background: white;
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            border-right: 2px solid #e5e7eb;
+            box-sizing: border-box;
+        }
+
+        .editor-section h2 { margin-top: 0; color: #1f2937; }
+
+        #input-text {
+            flex-grow: 1;
+            padding: 15px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 16px;
+            resize: none;
+            outline: none;
+            font-family: 'Inter', sans-serif;
+            line-height: 1.6;
+        }
+
+        .btn-export {
+            margin-top: 20px;
+            padding: 12px;
+            background: var(--primary-blue);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .btn-export:hover { background: #1d4ed8; }
+
+        /* Sisi Kanan: Preview */
+        .preview-section {
+            width: 60%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow-y: auto;
+            background: #e5e7eb;
+        }
+
+        #canvas-jurnal {
+            width: 450px;
+            min-height: 550px;
+            background: #fff;
+            padding: 50px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            position: relative;
+            background-image: radial-gradient(#d1d1d1 0.5px, transparent 0.5px);
+            background-size: 20px 20px;
+            box-sizing: border-box;
+        }
+
+        .journal-header {
+            border-bottom: 2px solid #333;
+            margin-bottom: 25px;
+            padding-bottom: 10px;
+        }
+
+        .journal-date {
+            font-family: 'Inter', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-size: 12px;
+            color: #666;
+        }
+
+        #output-text {
+            font-family: 'Lora', serif;
+            font-size: 20px;
+            line-height: 1.8;
+            color: #2d3748;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .watermark {
+            position: absolute;
+            bottom: 20px;
+            right: 30px;
+            font-family: 'Dancing Script', cursive;
+            color: #cbd5e0;
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="editor-section">
+        <h2>✍️ Jurnal Editor</h2>
+        <p style="color: #6b7280; font-size: 14px;">Tuliskan isi pikiranmu di sini.</p>
+        <textarea id="input-text" placeholder="Mulai mengetik..."></textarea>
+        <button class="btn-export" onclick="downloadImage()">Simpan sebagai PNG</button>
+    </div>
+
+    <div class="preview-section">
+        <div id="canvas-jurnal">
+            <div class="journal-header">
+                <div class="journal-date" id="display-date"></div>
+            </div>
+            <div id="output-text">Tuliskan sesuatu di kolom editor untuk melihat preview...</div>
+            <div class="watermark">My Daily Journal</div>
+        </div>
+    </div>
+
+    <script>
+        const input = document.getElementById('input-text');
+        const output = document.getElementById('output-text');
+        const dateElement = document.getElementById('display-date');
+
+        input.addEventListener('input', (e) => {
+            output.innerText = e.target.value || "Tuliskan sesuatu di kolom editor untuk melihat preview...";
+        });
+
+        const now = new Date();
+        dateElement.innerText = now.toLocaleDateString('id-ID', { 
+            weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' 
+        });
+
+        function downloadImage() {
+            const container = document.getElementById('canvas-jurnal');
+            html2canvas(container, {
+                scale: 3,
+                useCORS: true,
+                backgroundColor: "#ffffff"
+            }).then(canvas => {
+                const image = canvas.toDataURL("image/png");
+                const link = document.createElement('a');
+                link.download = `jurnal-${new Date().getTime()}.png`;
+                link.href = image;
+                link.click();
+            });
+        }
+    </script>
+</body>
+</html>
