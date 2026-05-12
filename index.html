@@ -1,16 +1,16 @@
-
 <!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Journal Editor & Export</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Mobile Journal Editor</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600&family=Inter:wght@300;400&family=Lora:ital@0;1&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600&family=Inter:wght@400;600&family=Lora:ital@0;1&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-color: #f0f2f5;
+            --bg-color: #f8f9fa;
             --primary-blue: #2563eb;
+            --card-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
         }
 
         body {
@@ -18,65 +18,92 @@
             background-color: var(--bg-color);
             margin: 0;
             display: flex;
+            flex-direction: row; /* Default desktop */
             height: 100vh;
-            overflow: hidden;
         }
 
-        /* Sisi Kiri: Input */
+        /* Responsive Layout */
+        @media (max-width: 768px) {
+            body {
+                flex-direction: column; /* Stacked di HP */
+                overflow-y: auto;
+                height: auto;
+            }
+            .editor-section, .preview-section {
+                width: 100% !important;
+                height: auto !important;
+            }
+            .editor-section {
+                padding: 20px !important;
+                order: 2; /* Editor di bawah preview saat di HP */
+            }
+            .preview-section {
+                padding: 20px 10px !important;
+                order: 1; /* Preview di atas agar langsung kelihatan */
+                background: #dee2e6 !important;
+            }
+            #canvas-jurnal {
+                width: 95% !important; /* Gunakan lebar layar HP */
+                min-height: 400px !important;
+                padding: 30px 20px !important;
+            }
+        }
+
+        /* Editor Style */
         .editor-section {
-            width: 40%;
+            width: 35%;
             background: white;
             padding: 30px;
             display: flex;
             flex-direction: column;
-            border-right: 2px solid #e5e7eb;
             box-sizing: border-box;
+            border-right: 1px solid #e5e7eb;
         }
-
-        .editor-section h2 { margin-top: 0; color: #1f2937; }
 
         #input-text {
             flex-grow: 1;
+            min-height: 150px;
             padding: 15px;
             border: 1px solid #d1d5db;
-            border-radius: 8px;
+            border-radius: 12px;
             font-size: 16px;
-            resize: none;
+            font-family: inherit;
+            line-height: 1.5;
             outline: none;
-            font-family: 'Inter', sans-serif;
-            line-height: 1.6;
+            transition: border 0.3s;
         }
 
+        #input-text:focus { border-color: var(--primary-blue); }
+
         .btn-export {
-            margin-top: 20px;
-            padding: 12px;
+            margin-top: 15px;
+            padding: 15px;
             background: var(--primary-blue);
             color: white;
             border: none;
-            border-radius: 8px;
+            border-radius: 12px;
             font-weight: 600;
+            font-size: 16px;
             cursor: pointer;
-            transition: 0.2s;
         }
 
-        .btn-export:hover { background: #1d4ed8; }
-
-        /* Sisi Kanan: Preview */
+        /* Preview Style */
         .preview-section {
-            width: 60%;
+            width: 65%;
+            background: #e9ecef;
             display: flex;
             justify-content: center;
             align-items: center;
-            overflow-y: auto;
-            background: #e5e7eb;
+            padding: 40px;
+            box-sizing: border-box;
         }
 
         #canvas-jurnal {
-            width: 450px;
-            min-height: 550px;
+            width: 400px;
+            min-height: 500px;
             background: #fff;
-            padding: 50px;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            box-shadow: var(--card-shadow);
             position: relative;
             background-image: radial-gradient(#d1d1d1 0.5px, transparent 0.5px);
             background-size: 20px 20px;
@@ -84,54 +111,54 @@
         }
 
         .journal-header {
-            border-bottom: 2px solid #333;
-            margin-bottom: 25px;
-            padding-bottom: 10px;
+            border-bottom: 1.5px solid #333;
+            margin-bottom: 20px;
+            padding-bottom: 8px;
         }
 
         .journal-date {
-            font-family: 'Inter', sans-serif;
             text-transform: uppercase;
-            letter-spacing: 2px;
-            font-size: 12px;
-            color: #666;
+            letter-spacing: 1.5px;
+            font-size: 11px;
+            color: #718096;
+            font-weight: 600;
         }
 
         #output-text {
             font-family: 'Lora', serif;
-            font-size: 20px;
-            line-height: 1.8;
-            color: #2d3748;
+            font-size: 18px;
+            line-height: 1.7;
+            color: #1a202c;
             white-space: pre-wrap;
-            word-wrap: break-word;
         }
 
         .watermark {
             position: absolute;
-            bottom: 20px;
-            right: 30px;
+            bottom: 15px;
+            right: 20px;
             font-family: 'Dancing Script', cursive;
             color: #cbd5e0;
-            font-size: 18px;
+            font-size: 16px;
         }
     </style>
 </head>
 <body>
 
+    <!-- SISI EDITOR -->
     <div class="editor-section">
-        <h2>✍️ Jurnal Editor</h2>
-        <p style="color: #6b7280; font-size: 14px;">Tuliskan isi pikiranmu di sini.</p>
-        <textarea id="input-text" placeholder="Mulai mengetik..."></textarea>
-        <button class="btn-export" onclick="downloadImage()">Simpan sebagai PNG</button>
+        <h3 style="margin: 0 0 10px 0;">✍️ Journaling</h3>
+        <textarea id="input-text" placeholder="Tuliskan isi hatimu..."></textarea>
+        <button class="btn-export" onclick="downloadImage()">Simpan Gambar (PNG)</button>
     </div>
 
+    <!-- SISI PREVIEW -->
     <div class="preview-section">
         <div id="canvas-jurnal">
             <div class="journal-header">
                 <div class="journal-date" id="display-date"></div>
             </div>
-            <div id="output-text">Tuliskan sesuatu di kolom editor untuk melihat preview...</div>
-            <div class="watermark">My Daily Journal</div>
+            <div id="output-text">Mulai menulis...</div>
+            <div class="watermark">My Digital Journal</div>
         </div>
     </div>
 
@@ -141,26 +168,28 @@
         const dateElement = document.getElementById('display-date');
 
         input.addEventListener('input', (e) => {
-            output.innerText = e.target.value || "Tuliskan sesuatu di kolom editor untuk melihat preview...";
+            output.innerText = e.target.value || "Mulai menulis...";
         });
 
-        const now = new Date();
-        dateElement.innerText = now.toLocaleDateString('id-ID', { 
-            weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' 
-        });
+        // Set Tanggal Otomatis
+        const options = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' };
+        dateElement.innerText = new Date().toLocaleDateString('id-ID', options);
 
         function downloadImage() {
             const container = document.getElementById('canvas-jurnal');
+            // Menghilangkan bayangan saat ekspor agar gambar bersih
+            container.style.boxShadow = "none";
+            
             html2canvas(container, {
-                scale: 3,
-                useCORS: true,
-                backgroundColor: "#ffffff"
+                scale: 3, 
+                backgroundColor: "#ffffff",
+                logging: false
             }).then(canvas => {
-                const image = canvas.toDataURL("image/png");
                 const link = document.createElement('a');
-                link.download = `jurnal-${new Date().getTime()}.png`;
-                link.href = image;
+                link.download = `journal-${Date.now()}.png`;
+                link.href = canvas.toDataURL("image/png");
                 link.click();
+                container.style.boxShadow = "0 10px 15px -3px rgba(0, 0, 0, 0.1)";
             });
         }
     </script>
