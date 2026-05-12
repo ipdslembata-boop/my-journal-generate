@@ -5,11 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>IG Portrait Journal (4:5)</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600&family=Inter:wght@400;600&family=Lora:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Lora:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
     <style>
         :root {
             --bg-ui: #f1f5f9;
             --primary: #0f172a;
+            --highlight: #fde047; /* Kuning cerah */
         }
 
         body {
@@ -88,27 +89,23 @@
         }
 
         .ig-portrait {
-            width: 400px; /* Tampilan preview dikali 2.7x saat export agar jadi 1080px */
-            height: 500px; /* Rasio 4:5 */
+            width: 400px; 
+            height: 500px; 
             background: #fff;
-            padding: 50px 45px;
+            padding: 30px 45px; /* Padding atas dikurangi agar header lebih ke atas */
             box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
             position: relative;
             box-sizing: border-box;
-            background-image: 
-                linear-gradient(#f1f5f9 1px, transparent 1px),
-                linear-gradient(90deg, #f1f5f9 1px, transparent 1px);
-            background-size: 25px 25px;
             flex-shrink: 0;
         }
 
         .header-journal {
             border-bottom: 2px solid #1e293b;
-            margin-bottom: 30px;
+            margin-bottom: 25px;
             display: flex;
             justify-content: space-between;
             align-items: flex-end;
-            padding-bottom: 8px;
+            padding-bottom: 6px;
         }
 
         .date-label { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; color: #1e293b; }
@@ -118,9 +115,9 @@
         .text-wrap {
             font-family: 'Lora', serif;
             font-size: 17px;
-            line-height: 1.9;
+            line-height: 1.8;
             color: #334155;
-            height: 340px; /* Batas tinggi konten sebelum pecah halaman */
+            height: 380px; /* Area teks lebih tinggi karena footer dihapus */
             overflow: hidden;
         }
 
@@ -135,15 +132,9 @@
             font-family: 'Inter', sans-serif;
         }
         .md-bold { font-weight: 700; color: #000; }
+        .md-italic { font-style: italic; }
+        .md-highlight { background-color: var(--highlight); padding: 0 2px; border-radius: 2px; }
 
-        .footer-sign {
-            position: absolute;
-            bottom: 25px;
-            right: 45px;
-            font-family: 'Dancing Script', cursive;
-            color: #94a3b8;
-            font-size: 18px;
-        }
     </style>
 </head>
 <body>
@@ -154,8 +145,10 @@
         
         <div class="hint-box">
             <b>Formatting Tips:</b><br>
-            • <b>**Teks Ini Jadi Judul**</b><br>
-            • <b>*Teks Ini Jadi Tebal*</b>
+            • <b>**Judul**</b><br>
+            • <b>*Tebal*</b><br>
+            • <b>\Miring\</b><br>
+            • <b>\\Highlight\\</b>
         </div>
 
         <div class="btn-group">
@@ -164,7 +157,7 @@
     </div>
 
     <div class="preview-section" id="canvas-container">
-        <!-- Halaman akan di-generate otomatis di sini -->
+        <!-- Generated Pages -->
     </div>
 
     <script>
@@ -174,8 +167,10 @@
 
         function applyMarkdown(text) {
             return text
-                .replace(/\*\*(.*?)\*\*/g, '<span class="md-h1">$1</span>')
-                .replace(/\*(.*?)\*/g, '<span class="md-bold">$1</span>');
+                .replace(/\*\*(.*?)\*\*/g, '<span class="md-h1">$1</span>') // Judul
+                .replace(/\\\\(.*?)\\\\/g, '<span class="md-highlight">$1</span>') // Highlight
+                .replace(/\*(.*?)\*/g, '<span class="md-bold">$1</span>') // Bold
+                .replace(/\\(.*?)\\/g, '<span class="md-italic">$1</span>'); // Italic
         }
 
         function renderPages() {
@@ -194,8 +189,8 @@
                 
                 activeArea.appendChild(pEl);
 
-                // Jika melebihi batas tinggi (340px)
-                if (activeArea.scrollHeight > 340) {
+                // Cek tinggi (380px sekarang)
+                if (activeArea.scrollHeight > 380) {
                     activeArea.removeChild(pEl);
                     
                     pNum++;
@@ -215,19 +210,17 @@
                     <span class="page-counter">SLIDE ${n}</span>
                 </div>
                 <div class="text-wrap"></div>
-                <div class="footer-sign">The Personal Curator</div>
             `;
             container.appendChild(el);
             return el;
         }
 
         input.addEventListener('input', renderPages);
-        renderPages(); // Initial Load
+        renderPages();
 
         async function downloadAll() {
             const pages = document.querySelectorAll('.ig-portrait');
             for (let i = 0; i < pages.length; i++) {
-                // Scale 2.7 menghasilkan lebar 1080px dari elemen 400px
                 const canvas = await html2canvas(pages[i], { 
                     scale: 2.7, 
                     backgroundColor: '#ffffff',
