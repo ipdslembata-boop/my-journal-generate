@@ -3,135 +3,186 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Journal with Chart</title>
-    <!-- Library untuk Grafik dan Ekspor Gambar -->
+    <title>Professional Data Journal</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Lora:ital@0;1&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
     <style>
-        :root { --bg: #f3f4f6; --primary: #2563eb; }
-        body { font-family: 'Inter', sans-serif; background: var(--bg); margin: 0; display: flex; flex-direction: row; height: 100vh; }
+        :root { --accent: #1e293b; --bg-ui: #f1f5f9; }
         
-        /* Layout Mobile Friendly */
+        body { font-family: 'Montserrat', sans-serif; background: var(--bg-ui); margin: 0; display: flex; height: 100vh; color: #334155; }
+
         @media (max-width: 768px) {
             body { flex-direction: column; height: auto; }
-            .editor, .preview { width: 100% !important; }
-            .preview { order: 1; padding: 15px !important; background: #ddd !important; }
-            .editor { order: 2; padding: 20px !important; }
+            .sidebar, .preview-container { width: 100% !important; }
+            .preview-container { order: 1; padding: 20px 10px !important; min-height: 100vh; }
+            .sidebar { order: 2; border-radius: 20px 20px 0 0; margin-top: -20px; box-shadow: 0 -10px 20px rgba(0,0,0,0.05); }
         }
 
-        .editor { width: 35%; background: white; padding: 25px; box-sizing: border-box; border-right: 1px solid #e5e7eb; overflow-y: auto; }
-        .preview { width: 65%; display: flex; justify-content: center; align-items: flex-start; padding: 40px; box-sizing: border-box; overflow-y: auto; }
-
-        /* Form Input */
-        .input-group { margin-bottom: 15px; }
-        label { display: block; font-size: 14px; font-weight: 600; margin-bottom: 5px; }
-        input, textarea { width: 100%; padding: 10px; border: 1px solid #d1d5db; border-radius: 8px; box-sizing: border-box; }
-        textarea { height: 120px; resize: none; }
-
-        /* Tampilan Jurnal */
-        #journal-paper {
-            width: 100%;
-            max-width: 500px;
-            background: white;
-            padding: 40px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-            border-radius: 4px;
+        /* Sidebar Editor */
+        .sidebar { width: 380px; background: white; padding: 25px; overflow-y: auto; box-sizing: border-box; border-right: 1px solid #e2e8f0; }
+        h2 { font-size: 1.2rem; margin-bottom: 20px; color: var(--accent); }
+        .form-group { margin-bottom: 18px; }
+        label { font-size: 0.85rem; font-weight: 600; display: block; margin-bottom: 6px; }
+        input, select, textarea { 
+            width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px; 
+            font-family: inherit; font-size: 0.9rem; box-sizing: border-box;
         }
-        .date { font-size: 12px; color: #666; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 20px; text-transform: uppercase; }
-        #text-output { font-family: 'Lora', serif; font-size: 18px; line-height: 1.6; margin-bottom: 25px; white-space: pre-wrap; }
-        .chart-container { width: 100%; margin-top: 20px; }
+        
+        /* Preview Area */
+        .preview-container { flex-grow: 1; display: flex; justify-content: center; align-items: flex-start; padding: 50px; background: #cbd5e1; overflow-y: auto; }
+        
+        /* Kertas Jurnal Estetik */
+        #journal-page {
+            width: 100%; max-width: 550px; background: #fff; padding: 60px;
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.2); position: relative;
+            /* Tekstur Kertas Halus */
+            background-color: #fdfdfd;
+            background-image: 
+                linear-gradient(90deg, rgba(200,0,0,0.05) 50%, transparent 50%),
+                linear-gradient(rgba(200,0,0,0.05) 50%, transparent 50%);
+            background-size: 4px 4px; /* Efek grid kertas mikro */
+        }
 
-        .btn-save { width: 100%; padding: 15px; background: var(--primary); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; margin-top: 10px; }
+        .header-meta { border-bottom: 2px solid var(--accent); margin-bottom: 30px; padding-bottom: 5px; display: flex; justify-content: space-between; align-items: flex-end; }
+        .date { font-size: 0.75rem; letter-spacing: 1px; color: #64748b; }
+        
+        #out-title { font-size: 2rem; margin: 0 0 20px 0; font-family: 'Crimson Text', serif; color: var(--accent); font-weight: 600; line-height: 1.2; }
+        #out-text { font-family: 'Crimson Text', serif; font-size: 1.25rem; line-height: 1.7; color: #334155; white-space: pre-wrap; }
+
+        /* Grafik */
+        #chart-wrap { margin-top: 40px; padding: 20px; background: rgba(255,255,255,0.5); border-radius: 8px; border: 1px solid #f1f5f9; display: none; }
+        
+        .btn-main { 
+            width: 100%; padding: 15px; background: var(--accent); color: white; border: none; 
+            border-radius: 8px; font-weight: 600; cursor: pointer; transition: 0.3s;
+        }
+        .btn-main:hover { opacity: 0.9; transform: translateY(-2px); }
     </style>
 </head>
 <body>
 
-    <div class="editor">
-        <h3>📊 Data & Catatan</h3>
+    <div class="sidebar">
+        <h2>📝 Editor Jurnal</h2>
         
-        <div class="input-group">
-            <label>Judul Jurnal / Topik</label>
-            <input type="text" id="title-input" placeholder="Contoh: Analisis Data Desa">
+        <div class="form-group">
+            <label>Judul Analisis</label>
+            <input type="text" id="in-title" placeholder="Contoh: Perkembangan Desa Lembata">
         </div>
 
-        <div class="input-group">
-            <label>Data Angka (Pisahkan dengan koma)</label>
-            <input type="text" id="data-input" placeholder="Contoh: 10, 25, 45, 30" oninput="updateChart()">
+        <div class="form-group">
+            <label>Catatan / Insight</label>
+            <textarea id="in-text" placeholder="Tuliskan narasi profesional di sini..."></textarea>
         </div>
 
-        <div class="input-group">
-            <label>Label Data (Pisahkan dengan koma)</label>
-            <input type="text" id="label-input" placeholder="Contoh: Jan, Feb, Mar, Apr" oninput="updateChart()">
+        <hr style="border: 0; border-top: 1px solid #f1f5f9; margin: 25px 0;">
+
+        <div class="form-group">
+            <label>Sertakan Grafik?</label>
+            <select id="in-show-chart" onchange="toggleChartUI()">
+                <option value="no">Tidak Ada Grafik</option>
+                <option value="yes">Ya, Tambahkan Grafik</option>
+            </select>
         </div>
 
-        <div class="input-group">
-            <label>Narasi / Catatan</label>
-            <textarea id="text-input" placeholder="Tuliskan penjelasan atau insight di sini..."></textarea>
+        <div id="chart-controls" style="display: none;">
+            <div class="form-group">
+                <label>Tipe Grafik</label>
+                <select id="in-chart-type" onchange="updateChart()">
+                    <option value="bar">Bar Chart (Batang)</option>
+                    <option value="line">Line Chart (Garis)</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Data (Koma: 10, 20, 30)</label>
+                <input type="text" id="in-data" placeholder="Angka" oninput="updateChart()">
+            </div>
+            <div class="form-group">
+                <label>Label (Koma: A, B, C)</label>
+                <input type="text" id="in-labels" placeholder="Nama Data" oninput="updateChart()">
+            </div>
         </div>
 
-        <button class="btn-save" onclick="exportImage()">Simpan Jadi Gambar</button>
+        <button class="btn-main" onclick="saveAsPNG()">Ekspor Jurnal ke PNG</button>
     </div>
 
-    <div class="preview">
-        <div id="journal-paper">
-            <div class="date" id="current-date"></div>
-            <h2 id="title-output" style="margin-top: 0; font-family: 'Lora', serif;">Judul Jurnal</h2>
-            <div id="text-output">Narasi catatan kamu akan muncul di sini...</div>
+    <div class="preview-container">
+        <div id="journal-page">
+            <div class="header-meta">
+                <span class="date" id="out-date"></span>
+                <span style="font-size: 0.7rem; color: #94a3b8;">OFFICIAL REPORT</span>
+            </div>
+            <h1 id="out-title">Judul Jurnal</h1>
+            <div id="out-text">Mulai tuliskan narasi atau data penting Anda untuk melihat perubahan di sini secara langsung...</div>
             
-            <div class="chart-container">
-                <canvas id="myChart"></canvas>
+            <div id="chart-wrap">
+                <canvas id="canvas-chart"></canvas>
             </div>
         </div>
     </div>
 
     <script>
-        // Inisialisasi Tanggal
-        document.getElementById('current-date').innerText = new Date().toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+        // Tanggal Otomatis
+        document.getElementById('out-date').innerText = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
 
-        // Inisialisasi Grafik
-        const ctx = document.getElementById('myChart').getContext('2d');
-        let myChart = new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: ['A', 'B', 'C', 'D'],
-                datasets: [{
-                    label: 'Nilai',
-                    data: [12, 19, 3, 5],
-                    backgroundColor: 'rgba(37, 99, 235, 0.5)',
-                    borderColor: 'rgba(37, 99, 235, 1)',
-                    borderWidth: 1
-                }]
-            },
-            options: { responsive: true, scales: { y: { beginAtZero: true } } }
-        });
+        // Inisialisasi Chart
+        let myChart = null;
+        const ctx = document.getElementById('canvas-chart').getContext('2d');
 
-        // Update Text Realtime
-        document.getElementById('text-input').addEventListener('input', (e) => {
-            document.getElementById('text-output').innerText = e.target.value;
-        });
-        document.getElementById('title-input').addEventListener('input', (e) => {
-            document.getElementById('title-output').innerText = e.target.value;
-        });
-
-        // Update Grafik Realtime
-        function updateChart() {
-            const dataVal = document.getElementById('data-input').value.split(',').map(Number);
-            const labelVal = document.getElementById('label-input').value.split(',');
-
-            if (dataVal.length > 0 && labelVal.length === dataVal.length) {
-                myChart.data.labels = labelVal;
-                myChart.data.datasets[0].data = dataVal;
-                myChart.update();
+        function toggleChartUI() {
+            const show = document.getElementById('in-show-chart').value;
+            const controls = document.getElementById('chart-controls');
+            const wrap = document.getElementById('chart-wrap');
+            
+            if(show === 'yes') {
+                controls.style.display = 'block';
+                wrap.style.display = 'block';
+                updateChart();
+            } else {
+                controls.style.display = 'none';
+                wrap.style.display = 'none';
             }
         }
 
-        // Fungsi Ekspor Gambar
-        function exportImage() {
-            const paper = document.getElementById('journal-paper');
-            html2canvas(paper, { scale: 3, backgroundColor: "#ffffff" }).then(canvas => {
+        function updateChart() {
+            const type = document.getElementById('in-chart-type').value;
+            const dataInput = document.getElementById('in-data').value.split(',').map(Number);
+            const labelInput = document.getElementById('in-labels').value.split(',');
+
+            if(myChart) myChart.destroy();
+
+            myChart = new Chart(ctx, {
+                type: type,
+                data: {
+                    labels: labelInput,
+                    datasets: [{
+                        label: 'Nilai Statistik',
+                        data: dataInput,
+                        backgroundColor: type === 'bar' ? 'rgba(30, 41, 59, 0.6)' : 'transparent',
+                        borderColor: '#1e293b',
+                        borderWidth: 2,
+                        tension: 0.3,
+                        pointBackgroundColor: '#1e293b'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { display: true, labels: { font: { family: 'Montserrat' } } } },
+                    scales: { y: { beginAtZero: true } }
+                }
+            });
+        }
+
+        // Live Update Text
+        document.getElementById('in-title').addEventListener('input', (e) => document.getElementById('out-title').innerText = e.target.value || "Judul Jurnal");
+        document.getElementById('in-text').addEventListener('input', (e) => document.getElementById('out-text').innerText = e.target.value || "Isi narasi...");
+
+        // Export Function
+        function saveAsPNG() {
+            const node = document.getElementById('journal-page');
+            html2canvas(node, { scale: 3, backgroundColor: "#ffffff" }).then(canvas => {
                 const link = document.createElement('a');
-                link.download = `jurnal-statistik-${Date.now()}.png`;
+                link.download = `Report_${Date.now()}.png`;
                 link.href = canvas.toDataURL("image/png");
                 link.click();
             });
