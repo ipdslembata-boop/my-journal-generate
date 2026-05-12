@@ -3,193 +3,193 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Curator's IG Journal</title>
+    <title>Mobile Journal Editor</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,400&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600&family=Inter:wght@400;600&family=Lora:ital@0;1&display=swap" rel="stylesheet">
     <style>
         :root {
-            --cream: #f4f1ea;
-            --ink: #1a1a1a;
-            --accent: #8c7851;
+            --bg-color: #f8f9fa;
+            --primary-blue: #2563eb;
+            --card-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
         }
 
         body {
             font-family: 'Inter', sans-serif;
-            background: #dcd7cc;
+            background-color: var(--bg-color);
             margin: 0;
             display: flex;
+            flex-direction: row; /* Default desktop */
             height: 100vh;
         }
 
-        @media (max-width: 900px) {
-            body { flex-direction: column; height: auto; }
-            .editor { width: 100% !important; border-right: none; }
-            .preview { padding: 20px 10px !important; }
+        /* Responsive Layout */
+        @media (max-width: 768px) {
+            body {
+                flex-direction: column; /* Stacked di HP */
+                overflow-y: auto;
+                height: auto;
+            }
+            .editor-section, .preview-section {
+                width: 100% !important;
+                height: auto !important;
+            }
+            .editor-section {
+                padding: 20px !important;
+                order: 2; /* Editor di bawah preview saat di HP */
+            }
+            .preview-section {
+                padding: 20px 10px !important;
+                order: 1; /* Preview di atas agar langsung kelihatan */
+                background: #dee2e6 !important;
+            }
+            #canvas-jurnal {
+                width: 95% !important; /* Gunakan lebar layar HP */
+                min-height: 400px !important;
+                padding: 30px 20px !important;
+            }
         }
 
-        /* Editor Section */
-        .editor {
-            width: 380px;
-            background: #ffffff;
+        /* Editor Style */
+        .editor-section {
+            width: 35%;
+            background: white;
             padding: 30px;
-            overflow-y: auto;
-            border-right: 1px solid #c2bdb3;
-            box-sizing: border-box;
-        }
-
-        h2 { font-family: 'Playfair Display', serif; font-size: 1.5rem; margin-bottom: 20px; color: var(--ink); }
-        
-        .field { margin-bottom: 20px; }
-        label { font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: #777; display: block; margin-bottom: 8px; }
-        
-        input, select, textarea {
-            width: 100%; padding: 10px; border: 1px solid #e2e2e2; border-radius: 4px;
-            font-family: inherit; font-size: 0.9rem;
-        }
-
-        .btn-action {
-            width: 100%; padding: 14px; background: var(--ink); color: white;
-            border: none; border-radius: 4px; font-weight: 600; cursor: pointer;
-            margin-top: 10px; transition: 0.3s;
-        }
-
-        /* Canvas Section */
-        .preview {
-            flex-grow: 1; display: flex; justify-content: center; align-items: center;
-            padding: 40px; background: #dcd7cc;
-        }
-
-        #ig-canvas {
-            width: 450px; height: 560px; /* Portrait IG Ratio */
-            background: var(--cream);
-            padding: 50px;
-            box-shadow: 0 30px 60px rgba(0,0,0,0.15);
-            position: relative;
-            box-sizing: border-box;
             display: flex;
             flex-direction: column;
-            overflow: hidden;
+            box-sizing: border-box;
+            border-right: 1px solid #e5e7eb;
         }
 
-        /* Aesthetic Grain */
-        #ig-canvas::after {
-            content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background-image: url('https://www.transparenttextures.com/patterns/natural-paper.png');
-            opacity: 0.4; pointer-events: none;
+        #input-text {
+            flex-grow: 1;
+            min-height: 150px;
+            padding: 15px;
+            border: 1px solid #d1d5db;
+            border-radius: 12px;
+            font-size: 16px;
+            font-family: inherit;
+            line-height: 1.5;
+            outline: none;
+            transition: border 0.3s;
         }
 
-        .header-line { border-bottom: 1px solid #333; padding-bottom: 10px; margin-bottom: 30px; display: flex; justify-content: space-between; align-items: baseline; }
-        .category { font-size: 0.65rem; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; }
-        .date { font-family: 'Playfair Display', serif; font-style: italic; font-size: 0.8rem; }
+        #input-text:focus { border-color: var(--primary-blue); }
 
-        #title-out { font-family: 'Playfair Display', serif; font-size: 2.2rem; margin: 0 0 20px 0; line-height: 1.1; }
-        
-        /* Photo Box */
-        #photo-wrap {
-            width: 100%; height: 200px; background: #e8e4db; margin-bottom: 25px;
-            display: flex; justify-content: center; align-items: center;
-            border: 1px solid rgba(0,0,0,0.05); overflow: hidden;
+        .btn-export {
+            margin-top: 15px;
+            padding: 15px;
+            background: var(--primary-blue);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        /* Preview Style */
+        .preview-section {
+            width: 65%;
+            background: #e9ecef;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 40px;
+            box-sizing: border-box;
+        }
+
+        #canvas-jurnal {
+            width: 400px;
+            min-height: 500px;
+            background: #fff;
+            padding: 40px;
+            box-shadow: var(--card-shadow);
             position: relative;
-        }
-        #img-preview { width: 100%; height: 100%; object-fit: cover; display: none; }
-        .photo-placeholder { font-size: 0.7rem; color: #aaa; text-transform: uppercase; letter-spacing: 1px; }
-
-        #text-out {
-            font-size: 0.95rem; line-height: 1.6; color: #333;
-            display: -webkit-box; -webkit-line-clamp: 6; -webkit-box-orient: vertical; overflow: hidden;
+            background-image: radial-gradient(#d1d1d1 0.5px, transparent 0.5px);
+            background-size: 20px 20px;
+            box-sizing: border-box;
         }
 
-        /* Aesthetic Sticker Decor */
-        .circle-sticker {
-            position: absolute; bottom: 40px; right: 40px;
-            width: 60px; height: 60px; border: 1px solid var(--accent);
-            border-radius: 50%; display: flex; justify-content: center; align-items: center;
-            font-size: 0.5rem; text-align: center; color: var(--accent);
-            transform: rotate(15deg);
+        .journal-header {
+            border-bottom: 1.5px solid #333;
+            margin-bottom: 20px;
+            padding-bottom: 8px;
+        }
+
+        .journal-date {
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            font-size: 11px;
+            color: #718096;
+            font-weight: 600;
+        }
+
+        #output-text {
+            font-family: 'Lora', serif;
+            font-size: 18px;
+            line-height: 1.7;
+            color: #1a202c;
+            white-space: pre-wrap;
+        }
+
+        .watermark {
+            position: absolute;
+            bottom: 15px;
+            right: 20px;
+            font-family: 'Dancing Script', cursive;
+            color: #cbd5e0;
+            font-size: 16px;
         }
     </style>
 </head>
 <body>
 
-    <div class="editor">
-        <h2>Curator's Studio</h2>
-        
-        <div class="field">
-            <label>Kategori</label>
-            <input type="text" id="in-cat" placeholder="Book Review / Movie / Thoughts">
-        </div>
-
-        <div class="field">
-            <label>Judul</label>
-            <input type="text" id="in-title" placeholder="Judul Karya">
-        </div>
-
-        <div class="field">
-            <label>Upload Foto (Cover/Cuplikan)</label>
-            <input type="file" id="in-img" accept="image/*" onchange="previewFile()">
-        </div>
-
-        <div class="field">
-            <label>Review / Cerita</label>
-            <textarea id="in-text" rows="6" placeholder="Bagikan apa yang kamu rasakan..."></textarea>
-        </div>
-
-        <button class="btn-action" onclick="exportIG()">Download PNG</button>
+    <!-- SISI EDITOR -->
+    <div class="editor-section">
+        <h3 style="margin: 0 0 10px 0;">✍️ Journaling</h3>
+        <textarea id="input-text" placeholder="Tuliskan isi hatimu..."></textarea>
+        <button class="btn-export" onclick="downloadImage()">Simpan Gambar (PNG)</button>
     </div>
 
-    <div class="preview">
-        <div id="ig-canvas">
-            <div class="header-line">
-                <span class="category" id="out-cat">PERSONAL JOURNAL</span>
-                <span class="date" id="out-date"></span>
+    <!-- SISI PREVIEW -->
+    <div class="preview-section">
+        <div id="canvas-jurnal">
+            <div class="journal-header">
+                <div class="journal-date" id="display-date"></div>
             </div>
-
-            <div id="photo-wrap">
-                <img id="img-preview" src="">
-                <span class="photo-placeholder" id="ph-label">Visual Placeholder</span>
-            </div>
-
-            <h1 id="title-out">The Art of Storytelling</h1>
-            <div id="text-out">Tuliskan ulasan atau pemikiranmu di sini untuk melihat desain yang estetik secara otomatis...</div>
-
-            <div class="circle-sticker">
-                CURATED<br>BY ME
-            </div>
+            <div id="output-text">Mulai menulis...</div>
+            <div class="watermark">My Digital Journal</div>
         </div>
     </div>
 
     <script>
-        // Tanggal
-        document.getElementById('out-date').innerText = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+        const input = document.getElementById('input-text');
+        const output = document.getElementById('output-text');
+        const dateElement = document.getElementById('display-date');
 
-        // Preview Image
-        function previewFile() {
-            const preview = document.getElementById('img-preview');
-            const file = document.getElementById('in-img').files[0];
-            const reader = new FileReader();
+        input.addEventListener('input', (e) => {
+            output.innerText = e.target.value || "Mulai menulis...";
+        });
 
-            reader.onloadend = function () {
-                preview.src = reader.result;
-                preview.style.display = "block";
-                document.getElementById('ph-label').style.display = "none";
-            }
+        // Set Tanggal Otomatis
+        const options = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' };
+        dateElement.innerText = new Date().toLocaleDateString('id-ID', options);
 
-            if (file) { reader.readAsDataURL(file); }
-        }
-
-        // Live Update
-        document.getElementById('in-cat').addEventListener('input', e => document.getElementById('out-cat').innerText = e.target.value || "PERSONAL JOURNAL");
-        document.getElementById('in-title').addEventListener('input', e => document.getElementById('title-out').innerText = e.target.value || "Judul Karya");
-        document.getElementById('in-text').addEventListener('input', e => document.getElementById('text-out').innerText = e.target.value || "Isi cerita...");
-
-        // Export PNG
-        function exportIG() {
-            const node = document.getElementById('ig-canvas');
-            html2canvas(node, { scale: 3, backgroundColor: '#f4f1ea' }).then(canvas => {
+        function downloadImage() {
+            const container = document.getElementById('canvas-jurnal');
+            // Menghilangkan bayangan saat ekspor agar gambar bersih
+            container.style.boxShadow = "none";
+            
+            html2canvas(container, {
+                scale: 3, 
+                backgroundColor: "#ffffff",
+                logging: false
+            }).then(canvas => {
                 const link = document.createElement('a');
-                link.download = `Journal_IG_${Date.now()}.png`;
-                link.href = canvas.toDataURL();
+                link.download = `journal-${Date.now()}.png`;
+                link.href = canvas.toDataURL("image/png");
                 link.click();
+                container.style.boxShadow = "0 10px 15px -3px rgba(0, 0, 0, 0.1)";
             });
         }
     </script>
