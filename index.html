@@ -3,193 +3,137 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Mobile Journal Editor</title>
+    <title>Journal with Chart</title>
+    <!-- Library untuk Grafik dan Ekspor Gambar -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600&family=Inter:wght@400;600&family=Lora:ital@0;1&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Lora:ital@0;1&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --bg-color: #f8f9fa;
-            --primary-blue: #2563eb;
-            --card-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-        }
-
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: var(--bg-color);
-            margin: 0;
-            display: flex;
-            flex-direction: row; /* Default desktop */
-            height: 100vh;
-        }
-
-        /* Responsive Layout */
+        :root { --bg: #f3f4f6; --primary: #2563eb; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); margin: 0; display: flex; flex-direction: row; height: 100vh; }
+        
+        /* Layout Mobile Friendly */
         @media (max-width: 768px) {
-            body {
-                flex-direction: column; /* Stacked di HP */
-                overflow-y: auto;
-                height: auto;
-            }
-            .editor-section, .preview-section {
-                width: 100% !important;
-                height: auto !important;
-            }
-            .editor-section {
-                padding: 20px !important;
-                order: 2; /* Editor di bawah preview saat di HP */
-            }
-            .preview-section {
-                padding: 20px 10px !important;
-                order: 1; /* Preview di atas agar langsung kelihatan */
-                background: #dee2e6 !important;
-            }
-            #canvas-jurnal {
-                width: 95% !important; /* Gunakan lebar layar HP */
-                min-height: 400px !important;
-                padding: 30px 20px !important;
-            }
+            body { flex-direction: column; height: auto; }
+            .editor, .preview { width: 100% !important; }
+            .preview { order: 1; padding: 15px !important; background: #ddd !important; }
+            .editor { order: 2; padding: 20px !important; }
         }
 
-        /* Editor Style */
-        .editor-section {
-            width: 35%;
+        .editor { width: 35%; background: white; padding: 25px; box-sizing: border-box; border-right: 1px solid #e5e7eb; overflow-y: auto; }
+        .preview { width: 65%; display: flex; justify-content: center; align-items: flex-start; padding: 40px; box-sizing: border-box; overflow-y: auto; }
+
+        /* Form Input */
+        .input-group { margin-bottom: 15px; }
+        label { display: block; font-size: 14px; font-weight: 600; margin-bottom: 5px; }
+        input, textarea { width: 100%; padding: 10px; border: 1px solid #d1d5db; border-radius: 8px; box-sizing: border-box; }
+        textarea { height: 120px; resize: none; }
+
+        /* Tampilan Jurnal */
+        #journal-paper {
+            width: 100%;
+            max-width: 500px;
             background: white;
-            padding: 30px;
-            display: flex;
-            flex-direction: column;
-            box-sizing: border-box;
-            border-right: 1px solid #e5e7eb;
-        }
-
-        #input-text {
-            flex-grow: 1;
-            min-height: 150px;
-            padding: 15px;
-            border: 1px solid #d1d5db;
-            border-radius: 12px;
-            font-size: 16px;
-            font-family: inherit;
-            line-height: 1.5;
-            outline: none;
-            transition: border 0.3s;
-        }
-
-        #input-text:focus { border-color: var(--primary-blue); }
-
-        .btn-export {
-            margin-top: 15px;
-            padding: 15px;
-            background: var(--primary-blue);
-            color: white;
-            border: none;
-            border-radius: 12px;
-            font-weight: 600;
-            font-size: 16px;
-            cursor: pointer;
-        }
-
-        /* Preview Style */
-        .preview-section {
-            width: 65%;
-            background: #e9ecef;
-            display: flex;
-            justify-content: center;
-            align-items: center;
             padding: 40px;
-            box-sizing: border-box;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            border-radius: 4px;
         }
+        .date { font-size: 12px; color: #666; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 20px; text-transform: uppercase; }
+        #text-output { font-family: 'Lora', serif; font-size: 18px; line-height: 1.6; margin-bottom: 25px; white-space: pre-wrap; }
+        .chart-container { width: 100%; margin-top: 20px; }
 
-        #canvas-jurnal {
-            width: 400px;
-            min-height: 500px;
-            background: #fff;
-            padding: 40px;
-            box-shadow: var(--card-shadow);
-            position: relative;
-            background-image: radial-gradient(#d1d1d1 0.5px, transparent 0.5px);
-            background-size: 20px 20px;
-            box-sizing: border-box;
-        }
-
-        .journal-header {
-            border-bottom: 1.5px solid #333;
-            margin-bottom: 20px;
-            padding-bottom: 8px;
-        }
-
-        .journal-date {
-            text-transform: uppercase;
-            letter-spacing: 1.5px;
-            font-size: 11px;
-            color: #718096;
-            font-weight: 600;
-        }
-
-        #output-text {
-            font-family: 'Lora', serif;
-            font-size: 18px;
-            line-height: 1.7;
-            color: #1a202c;
-            white-space: pre-wrap;
-        }
-
-        .watermark {
-            position: absolute;
-            bottom: 15px;
-            right: 20px;
-            font-family: 'Dancing Script', cursive;
-            color: #cbd5e0;
-            font-size: 16px;
-        }
+        .btn-save { width: 100%; padding: 15px; background: var(--primary); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; margin-top: 10px; }
     </style>
 </head>
 <body>
 
-    <!-- SISI EDITOR -->
-    <div class="editor-section">
-        <h3 style="margin: 0 0 10px 0;">✍️ Journaling</h3>
-        <textarea id="input-text" placeholder="Tuliskan isi hatimu..."></textarea>
-        <button class="btn-export" onclick="downloadImage()">Simpan Gambar (PNG)</button>
+    <div class="editor">
+        <h3>📊 Data & Catatan</h3>
+        
+        <div class="input-group">
+            <label>Judul Jurnal / Topik</label>
+            <input type="text" id="title-input" placeholder="Contoh: Analisis Data Desa">
+        </div>
+
+        <div class="input-group">
+            <label>Data Angka (Pisahkan dengan koma)</label>
+            <input type="text" id="data-input" placeholder="Contoh: 10, 25, 45, 30" oninput="updateChart()">
+        </div>
+
+        <div class="input-group">
+            <label>Label Data (Pisahkan dengan koma)</label>
+            <input type="text" id="label-input" placeholder="Contoh: Jan, Feb, Mar, Apr" oninput="updateChart()">
+        </div>
+
+        <div class="input-group">
+            <label>Narasi / Catatan</label>
+            <textarea id="text-input" placeholder="Tuliskan penjelasan atau insight di sini..."></textarea>
+        </div>
+
+        <button class="btn-save" onclick="exportImage()">Simpan Jadi Gambar</button>
     </div>
 
-    <!-- SISI PREVIEW -->
-    <div class="preview-section">
-        <div id="canvas-jurnal">
-            <div class="journal-header">
-                <div class="journal-date" id="display-date"></div>
+    <div class="preview">
+        <div id="journal-paper">
+            <div class="date" id="current-date"></div>
+            <h2 id="title-output" style="margin-top: 0; font-family: 'Lora', serif;">Judul Jurnal</h2>
+            <div id="text-output">Narasi catatan kamu akan muncul di sini...</div>
+            
+            <div class="chart-container">
+                <canvas id="myChart"></canvas>
             </div>
-            <div id="output-text">Mulai menulis...</div>
-            <div class="watermark">My Digital Journal</div>
         </div>
     </div>
 
     <script>
-        const input = document.getElementById('input-text');
-        const output = document.getElementById('output-text');
-        const dateElement = document.getElementById('display-date');
+        // Inisialisasi Tanggal
+        document.getElementById('current-date').innerText = new Date().toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
 
-        input.addEventListener('input', (e) => {
-            output.innerText = e.target.value || "Mulai menulis...";
+        // Inisialisasi Grafik
+        const ctx = document.getElementById('myChart').getContext('2d');
+        let myChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['A', 'B', 'C', 'D'],
+                datasets: [{
+                    label: 'Nilai',
+                    data: [12, 19, 3, 5],
+                    backgroundColor: 'rgba(37, 99, 235, 0.5)',
+                    borderColor: 'rgba(37, 99, 235, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: { responsive: true, scales: { y: { beginAtZero: true } } }
         });
 
-        // Set Tanggal Otomatis
-        const options = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' };
-        dateElement.innerText = new Date().toLocaleDateString('id-ID', options);
+        // Update Text Realtime
+        document.getElementById('text-input').addEventListener('input', (e) => {
+            document.getElementById('text-output').innerText = e.target.value;
+        });
+        document.getElementById('title-input').addEventListener('input', (e) => {
+            document.getElementById('title-output').innerText = e.target.value;
+        });
 
-        function downloadImage() {
-            const container = document.getElementById('canvas-jurnal');
-            // Menghilangkan bayangan saat ekspor agar gambar bersih
-            container.style.boxShadow = "none";
-            
-            html2canvas(container, {
-                scale: 3, 
-                backgroundColor: "#ffffff",
-                logging: false
-            }).then(canvas => {
+        // Update Grafik Realtime
+        function updateChart() {
+            const dataVal = document.getElementById('data-input').value.split(',').map(Number);
+            const labelVal = document.getElementById('label-input').value.split(',');
+
+            if (dataVal.length > 0 && labelVal.length === dataVal.length) {
+                myChart.data.labels = labelVal;
+                myChart.data.datasets[0].data = dataVal;
+                myChart.update();
+            }
+        }
+
+        // Fungsi Ekspor Gambar
+        function exportImage() {
+            const paper = document.getElementById('journal-paper');
+            html2canvas(paper, { scale: 3, backgroundColor: "#ffffff" }).then(canvas => {
                 const link = document.createElement('a');
-                link.download = `journal-${Date.now()}.png`;
+                link.download = `jurnal-statistik-${Date.now()}.png`;
                 link.href = canvas.toDataURL("image/png");
                 link.click();
-                container.style.boxShadow = "0 10px 15px -3px rgba(0, 0, 0, 0.1)";
             });
         }
     </script>
