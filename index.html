@@ -3,27 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>IG Portrait Journal (4:5)</title>
+    <title>Quiet Journal Editor (4:5)</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600&family=Inter:wght@400;600&family=Lora:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Lora:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-ui: #f1f5f9;
-            --primary: #0f172a;
+            --bg-soft: #e9edc9; /* Sage Green sangat teduh */
+            --paper: #fefae0;   /* Cream lembut */
+            --ink: #283618;     /* Hijau tua pekat */
+            --highlight: #ffea00;
         }
 
         body {
             font-family: 'Inter', sans-serif;
-            background-color: var(--bg-ui);
+            background-color: var(--bg-soft);
             margin: 0;
             display: flex;
             height: 100vh;
+            color: var(--ink);
         }
 
         @media (max-width: 768px) {
             body { flex-direction: column; height: auto; }
-            .editor-section { width: 100% !important; height: auto !important; order: 2; padding: 20px; }
-            .preview-section { width: 100% !important; order: 1; padding: 20px 10px; }
+            .editor-section { width: 100% !important; order: 2; padding: 20px; }
+            .preview-section { width: 100% !important; order: 1; padding: 20px; }
         }
 
         /* Sidebar Editor */
@@ -33,38 +36,35 @@
             padding: 30px;
             display: flex;
             flex-direction: column;
-            border-right: 1px solid #e2e8f0;
+            border-right: 1px solid rgba(0,0,0,0.05);
             box-sizing: border-box;
-            z-index: 10;
         }
 
         textarea {
             flex-grow: 1;
             padding: 15px;
-            border: 1.5px solid #cbd5e1;
+            border: 1.5px solid #ccd5ae;
             border-radius: 12px;
             font-size: 14px;
             line-height: 1.6;
             outline: none;
             resize: none;
-            font-family: 'Inter', sans-serif;
+            background: #fafafa;
         }
 
         .hint-box {
-            background: #f8fafc;
+            background: #fefae0;
             padding: 12px;
             border-radius: 8px;
             margin: 15px 0;
             font-size: 11px;
-            color: #475569;
-            border-left: 4px solid var(--primary);
+            color: #606c38;
+            border-left: 4px solid #606c38;
         }
-
-        .btn-group { display: flex; gap: 10px; flex-direction: column; }
 
         .btn-export {
             padding: 16px;
-            background: var(--primary);
+            background: #606c38;
             color: white;
             border: none;
             border-radius: 12px;
@@ -73,99 +73,70 @@
             transition: 0.2s;
         }
 
-        .btn-export:hover { opacity: 0.9; transform: translateY(-1px); }
-
-        /* Preview Area (Instagram 1080x1350) */
+        /* Preview Area (1080x1350) */
         .preview-section {
             flex-grow: 1;
             display: flex;
             flex-direction: column;
             align-items: center;
             gap: 40px;
-            padding: 60px;
+            padding: 40px;
             overflow-y: auto;
-            background: #cbd5e1;
         }
 
         .ig-portrait {
-            width: 400px; /* Tampilan preview dikali 2.7x saat export agar jadi 1080px */
-            height: 500px; /* Rasio 4:5 */
-            background: #fff;
-            padding: 50px 45px;
-            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
+            width: 400px; 
+            height: 500px; 
+            background: var(--paper);
+            padding: 35px 45px; /* Header lebih ke atas */
+            box-shadow: 0 20px 40px rgba(40, 54, 24, 0.1);
             position: relative;
             box-sizing: border-box;
-            background-image: 
-                linear-gradient(#f1f5f9 1px, transparent 1px),
-                linear-gradient(90deg, #f1f5f9 1px, transparent 1px);
-            background-size: 25px 25px;
             flex-shrink: 0;
         }
 
         .header-journal {
-            border-bottom: 2px solid #1e293b;
-            margin-bottom: 30px;
+            border-bottom: 1.5px solid var(--ink);
+            margin-bottom: 25px;
             display: flex;
             justify-content: space-between;
-            align-items: flex-end;
-            padding-bottom: 8px;
+            align-items: center;
+            padding-bottom: 5px;
         }
 
-        .date-label { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; color: #1e293b; }
-        .page-counter { font-size: 11px; font-weight: 700; color: #94a3b8; }
+        .date-label { font-size: 10px; font-weight: 700; letter-spacing: 1px; }
+        .page-counter { font-size: 10px; font-weight: 700; opacity: 0.5; }
 
-        /* Content Constraints */
         .text-wrap {
             font-family: 'Lora', serif;
             font-size: 17px;
-            line-height: 1.9;
-            color: #334155;
-            height: 340px; /* Batas tinggi konten sebelum pecah halaman */
+            line-height: 1.8;
+            color: var(--ink);
+            height: 380px; /* Area teks lebih luas */
             overflow: hidden;
         }
 
         /* Markdown Styles */
-        .md-h1 { 
-            font-size: 26px; 
-            font-weight: 700; 
-            display: block; 
-            margin-bottom: 12px; 
-            color: #0f172a; 
-            line-height: 1.2;
-            font-family: 'Inter', sans-serif;
-        }
-        .md-bold { font-weight: 700; color: #000; }
-
-        .footer-sign {
-            position: absolute;
-            bottom: 25px;
-            right: 45px;
-            font-family: 'Dancing Script', cursive;
-            color: #94a3b8;
-            font-size: 18px;
-        }
+        .md-h1 { font-family: 'Inter', sans-serif; font-size: 26px; font-weight: 700; display: block; margin-bottom: 10px; line-height: 1.2; }
+        .md-bold { font-weight: 700; }
+        .md-italic { font-style: italic; }
+        .md-hl { background-color: var(--highlight); padding: 0 2px; border-radius: 2px; }
     </style>
 </head>
 <body>
 
     <div class="editor-section">
-        <h2 style="margin-top:0">Journal Editor</h2>
-        <textarea id="main-input" placeholder="Apa yang ingin kamu ceritakan hari ini?"></textarea>
+        <h2 style="margin-top:0; color: #606c38;">Quiet Studio</h2>
+        <textarea id="main-input" placeholder="Ceritakan harimu..."></textarea>
         
         <div class="hint-box">
-            <b>Formatting Tips:</b><br>
-            • <b>**Teks Ini Jadi Judul**</b><br>
-            • <b>*Teks Ini Jadi Tebal*</b>
+            **Judul** | *Tebal* | \Miring\ | \\Highlight\\
         </div>
 
-        <div class="btn-group">
-            <button class="btn-export" onclick="downloadAll()">Simpan Semua Halaman (PNG)</button>
-        </div>
+        <button class="btn-export" onclick="downloadAll()">Download PNG (1080x1350)</button>
     </div>
 
-    <div class="preview-section" id="canvas-container">
-        <!-- Halaman akan di-generate otomatis di sini -->
-    </div>
+    <div class="preview-section" id="canvas-container"></div>
 
     <script>
         const input = document.getElementById('main-input');
@@ -174,13 +145,15 @@
 
         function applyMarkdown(text) {
             return text
-                .replace(/\*\*(.*?)\*\*/g, '<span class="md-h1">$1</span>')
-                .replace(/\*(.*?)\*/g, '<span class="md-bold">$1</span>');
+                .replace(/\*\*(.*?)\*\*/g, '<span class="md-h1">$1</span>') // Judul
+                .replace(/\\\\(.*?)\\\\/g, '<span class="md-hl">$1</span>') // Highlight
+                .replace(/\*(.*?)\*/g, '<span class="md-bold">$1</span>')    // Bold
+                .replace(/\\(.*?)\\/g, '<span class="md-italic">$1</span>'); // Italic
         }
 
         function renderPages() {
             container.innerHTML = '';
-            const content = input.value || "Mulai tuliskan ulasan buku, film, atau ceritamu...";
+            const content = input.value || "Tulis sesuatu...";
             const paragraphs = content.split('\n');
             
             let pNum = 1;
@@ -189,15 +162,12 @@
 
             paragraphs.forEach(p => {
                 const pEl = document.createElement('div');
-                pEl.style.marginBottom = '15px';
+                pEl.style.marginBottom = '12px';
                 pEl.innerHTML = applyMarkdown(p);
-                
                 activeArea.appendChild(pEl);
 
-                // Jika melebihi batas tinggi (340px)
-                if (activeArea.scrollHeight > 340) {
+                if (activeArea.scrollHeight > 380) {
                     activeArea.removeChild(pEl);
-                    
                     pNum++;
                     activePage = createNewPage(pNum);
                     activeArea = activePage.querySelector('.text-wrap');
@@ -215,27 +185,20 @@
                     <span class="page-counter">SLIDE ${n}</span>
                 </div>
                 <div class="text-wrap"></div>
-                <div class="footer-sign">The Personal Curator</div>
             `;
             container.appendChild(el);
             return el;
         }
 
         input.addEventListener('input', renderPages);
-        renderPages(); // Initial Load
+        renderPages();
 
         async function downloadAll() {
             const pages = document.querySelectorAll('.ig-portrait');
             for (let i = 0; i < pages.length; i++) {
-                // Scale 2.7 menghasilkan lebar 1080px dari elemen 400px
-                const canvas = await html2canvas(pages[i], { 
-                    scale: 2.7, 
-                    backgroundColor: '#ffffff',
-                    useCORS: true
-                });
-                
+                const canvas = await html2canvas(pages[i], { scale: 2.7, backgroundColor: '#fefae0' });
                 const link = document.createElement('a');
-                link.download = `IG-Journal-Page-${i+1}.png`;
+                link.download = `Quiet-Journal-${i+1}.png`;
                 link.href = canvas.toDataURL("image/png");
                 link.click();
             }
@@ -243,3 +206,4 @@
     </script>
 </body>
 </html>
+```[cite: 1]
